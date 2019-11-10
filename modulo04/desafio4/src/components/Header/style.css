@@ -1,0 +1,23 @@
+.header {
+  background: #4A90E2;
+  color: #FFF;
+  display: flex;
+  height: 64px;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 24px;
+  margin-left: 42px;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.profile {
+  margin-right: 42px;
+  margin-top: 20px;
+}
+
+.profile > span {
+  margin-right: 10px;
+}
