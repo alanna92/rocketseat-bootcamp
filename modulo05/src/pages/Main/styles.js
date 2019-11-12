@@ -24,14 +24,31 @@ export const Form = styled.form`
   margin-top: 30px;
   display: flex;
   flex-direction: row;
+`;
+
+export const FormField = styled.div`
+  color: red;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
   input {
-    flex: 1;
     border: 1px solid #eee;
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 16px;
+    ${props =>
+      props.hasError &&
+      css`
+        border: 1px solid red;
+      `};
   }
+`;
+
+export const InputError = styled.p.attrs(props => ({
+  display: props.hasError ? 'none' : 'block',
+}))`
+  color: red;
 `;
 
 const rotate = keyframes`
@@ -53,6 +70,7 @@ export const SubmitButton = styled.button.attrs(props => ({
   padding: 0 15px;
   margin-left: 10px;
   border-radius: 4px;
+  max-height: 40px;
 
   display: flex;
   justify-content: center;
