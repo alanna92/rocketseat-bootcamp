@@ -3,7 +3,15 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
 
-import { Loading, Owner, IssueList } from './styles';
+import {
+  Loading,
+  Owner,
+  IssueList,
+  IssueFilter,
+  Pagination,
+  PreviousButton,
+  NextButton,
+} from './styles';
 import Container from '../../components/Container';
 
 class Repository extends Component {
@@ -11,18 +19,22 @@ class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filter: 'open',
+    page: 1,
   };
 
   async componentDidMount() {
     const { match } = this.props;
     const repoName = decodeURIComponent(match.params.repository);
 
+    const { page } = this.state;
+
     const [repository, issues] = await Promise.all([
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
           state: 'open',
-          per_page: 5,
+          page,
         },
       }),
     ]);
@@ -34,8 +46,79 @@ class Repository extends Component {
     });
   }
 
+  handleIssueFilter = async e => {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+    const filter = e.target.value;
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filter,
+        page: 1,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      loading: false,
+      filter,
+      page: 1,
+    });
+  };
+
+  handleNextPage = async e => {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+    const { page, filter } = this.state;
+
+    const nextPage = page + 1;
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filter,
+        page: nextPage,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      loading: false,
+      page: nextPage,
+    });
+  };
+
+  handlePreviousPage = async e => {
+    e.preventDefault();
+    this.setState({ loading: true });
+
+    const { match } = this.props;
+    const repoName = decodeURIComponent(match.params.repository);
+    const { page, filter } = this.state;
+
+    const previousPage = page - 1;
+
+    const issues = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filter,
+        page: previousPage,
+      },
+    });
+
+    this.setState({
+      issues: issues.data,
+      loading: false,
+      page: previousPage,
+    });
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, filter, page } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -51,6 +134,11 @@ class Repository extends Component {
         </Owner>
 
         <IssueList>
+          <IssueFilter onChange={this.handleIssueFilter} value={filter}>
+            <option value="all">Todos</option>
+            <option value="open">Abertas</option>
+            <option value="closed">Fechadas</option>
+          </IssueFilter>
           {issues.map(issue => (
             <li key={String(issue.id)}>
               <img src={issue.user.avatar_url} alt={issue.user.login} />
@@ -66,6 +154,15 @@ class Repository extends Component {
             </li>
           ))}
         </IssueList>
+        <Pagination>
+          <PreviousButton
+            firstPage={page === 1}
+            onClick={this.handlePreviousPage}
+          >
+            Anterior
+          </PreviousButton>
+          <NextButton onClick={this.handleNextPage}>Próximo</NextButton>
+        </Pagination>
       </Container>
     );
   }
