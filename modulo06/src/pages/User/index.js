@@ -27,6 +27,8 @@ export default class User extends Component {
   state = {
     stars: [],
     loading: false,
+    loadingMore: false,
+    page: 1,
   };
 
   async componentDidMount() {
@@ -34,13 +36,44 @@ export default class User extends Component {
       loading: true,
     });
 
+    await this.loadStarred();
+
+    this.setState({
+      loading: false,
+    });
+  }
+
+  loadMore = async () => {
+    this.setState({
+      loadingMore: true,
+    });
+
+    await this.loadStarred();
+
+    this.setState({
+      loadingMore: false,
+    });
+  };
+
+  loadStarred = async () => {
+    const { page, stars } = this.state;
     const { navigation } = this.props;
     const user = navigation.getParam('user');
 
-    const response = await api.get(`/users/${user.login}/starred`);
+    const response = await api.get(`/users/${user.login}/starred?page=${page}`);
 
-    this.setState({ stars: response.data, loading: false });
-  }
+    this.setState({
+      stars: [...stars, ...response.data],
+      page: page + 1,
+    });
+  };
+
+  renderFooter = () => {
+    const { loadingMore } = this.state;
+    return loadingMore ? (
+      <ActivityIndicator size="small" color="#7159c1" />
+    ) : null;
+  };
 
   render() {
     const { navigation } = this.props;
@@ -61,6 +94,9 @@ export default class User extends Component {
           </Loading>
         ) : (
           <Stars
+            onEndReachedThreshold={0.2}
+            onEndReached={this.loadMore}
+            ListFooterComponent={this.renderFooter}
             data={stars}
             keyExtractor={star => String(star.id)}
             renderItem={({ item }) => (
