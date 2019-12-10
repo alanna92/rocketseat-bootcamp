@@ -75,3 +75,9 @@ export const Author = styled.Text`
   margin-top: 2px;
   color: #666;
 `;
+
+export const Loading = styled.View`
+  flex: 1;
+  flex-direction: row;
+  justify-content: center;
+`;
