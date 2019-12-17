@@ -5,7 +5,7 @@ import {
   MdDelete,
 } from 'react-icons/md';
 
-import { Container, ProductTable, Total, Button } from './styles';
+import { Container, ProductTable, Total } from './styles';
 
 export default function Cart() {
   return (
